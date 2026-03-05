@@ -295,7 +295,7 @@ export function SelfModQueue() {
                         approval.approved ? 'bg-green-500' : 'bg-red-500'
                       }`}
                     >
-                      {approval.user[0].toUpperCase()}
+                      {(approval.user?.[0] || '?').toUpperCase()}
                     </div>
                   ))}
                 </div>

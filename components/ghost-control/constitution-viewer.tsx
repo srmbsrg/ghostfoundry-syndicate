@@ -312,7 +312,7 @@ export function ConstitutionViewer() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className={`w-3 h-3 rounded-full ${zone === 'green' ? 'bg-green-500' : zone === 'yellow' ? 'bg-yellow-500' : 'bg-red-500'}`} />
-                          <h3 className="font-semibold text-white">{zone.toUpperCase()} ZONE</h3>
+                          <h3 className="font-semibold text-white">{(zone || 'UNKNOWN').toUpperCase()} ZONE</h3>
                           <span className="text-sm opacity-70">({zoneLabels[zone]})</span>
                         </div>
                         <span className="px-2 py-1 rounded-full bg-white/10 text-xs">{rules.length} rules</span>
@@ -380,7 +380,7 @@ export function ConstitutionViewer() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${breakerStateColors[breaker.state]}`}>
-                        {breaker.state.toUpperCase()}
+                        {(breaker.state || 'unknown').toUpperCase()}
                       </span>
                       {breaker.state === 'armed' ? (
                         <button
