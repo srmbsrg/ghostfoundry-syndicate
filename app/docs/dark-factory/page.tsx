@@ -265,14 +265,14 @@ export default function DarkFactoryDocsPage() {
                           <h3 className="text-xl font-semibold text-white">{stage.name}</h3>
                         </div>
                         
-                        <p className="text-gray-400 mb-4">{stage.description}</p>
+                        <p className="text-gray-300 mb-4">{stage.description}</p>
                         
                         <div className="grid md:grid-cols-2 gap-4">
                           <div>
-                            <h4 className="text-sm font-medium text-gray-300 mb-2">What happens:</h4>
+                            <h4 className="text-sm font-medium text-white mb-2">What happens:</h4>
                             <ul className="space-y-1">
                               {stage.details.map((detail, i) => (
-                                <li key={i} className="text-sm text-gray-500 flex items-start gap-2">
+                                <li key={i} className="text-sm text-gray-300 flex items-start gap-2">
                                   <ArrowRight className="w-3 h-3 mt-1 text-cyan-500 flex-shrink-0" />
                                   {detail}
                                 </li>
@@ -280,8 +280,8 @@ export default function DarkFactoryDocsPage() {
                             </ul>
                           </div>
                           <div className={`p-3 rounded-lg ${stage.bgColor}`}>
-                            <h4 className="text-sm font-medium text-gray-300 mb-1">Output:</h4>
-                            <p className="text-sm text-gray-400 font-mono">{stage.output}</p>
+                            <h4 className="text-sm font-medium text-white mb-1">Output:</h4>
+                            <p className="text-sm text-gray-300 font-mono">{stage.output}</p>
                           </div>
                         </div>
                       </div>
