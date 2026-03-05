@@ -1,0 +1,812 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/ghostfoundry_syndicate_website/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model DesignPartnerSubmission {
+  id          String   @id @default(cuid())
+  companyName String
+  contactName String
+  email       String
+  companySize String
+  useCase     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// DARK FACTORY MODELS
+// ============================================
+
+model GenerationRequest {
+  id          String   @id @default(cuid())
+  prompt      String   @db.Text
+  context     Json?    // RequestContext as JSON
+  priority    String   @default("normal") // low, normal, high, critical
+  requestedBy String   // Agent ID or 'human'
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  task        GenerationTask?
+}
+
+model GenerationTask {
+  id            String   @id @default(cuid())
+  requestId     String   @unique
+  request       GenerationRequest @relation(fields: [requestId], references: [id])
+  intent        Json?    // ParsedIntent as JSON
+  status        String   @default("queued") // queued, parsing, generating, validating, testing, awaiting_approval, deploying, completed, failed, rolled_back
+  stages        Json     @default("[]") // GenerationStage[] as JSON
+  startedAt     DateTime?
+  completedAt   DateTime?
+  error         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  artifacts     GeneratedArtifact[]
+  validations   ValidationResult[]
+  deployments   Deployment[]
+}
+
+model GeneratedArtifact {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      GenerationTask @relation(fields: [taskId], references: [id])
+  type      String   // prisma_model, api_route, react_component, typescript_type, test_file, integration, agent_definition
+  path      String   // File path relative to project root
+  content   String   @db.Text
+  checksum  String
+  version   Int      @default(1)
+  deployed  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([taskId])
+}
+
+model ValidationResult {
+  id                  String   @id @default(cuid())
+  taskId              String
+  task                GenerationTask @relation(fields: [taskId], references: [id])
+  passed              Boolean
+  checks              Json     // ValidationCheck[] as JSON
+  score               Int      // 0-100
+  canDeploy           Boolean
+  requiresHumanReview Boolean  @default(false)
+  createdAt           DateTime @default(now())
+
+  @@index([taskId])
+}
+
+model Deployment {
+  id                String   @id @default(cuid())
+  taskId            String
+  task              GenerationTask @relation(fields: [taskId], references: [id])
+  environment       String   // dev, staging, prod
+  artifactIds       Json     // String[] of artifact IDs
+  status            String   @default("pending") // pending, deploying, completed, failed, rolled_back
+  approvedBy        String?
+  deployedAt        DateTime?
+  rollbackPerformed Boolean  @default(false)
+  logs              Json     @default("[]")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([taskId])
+}
+
+// ============================================
+// GFS (GHOST FACTORY SYNDICATE) MODELS
+// ============================================
+
+model Agent {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        String   // operator, analyst, coordinator, specialist, guardian, architect, communicator
+  status      String   @default("initializing") // initializing, active, busy, idle, suspended, terminated
+  capabilities Json    @default("[]") // Capability IDs
+  personality Json?    // AgentPersonality
+  config      Json?    // AgentConfig
+  metrics     Json     @default("{}") // AgentMetrics
+  createdBy   String   @default("human") // human, factory, or agent ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tasks         Task[]
+  workflows     Workflow[]     @relation("WorkflowCreator")
+  workflowSteps WorkflowStep[]
+}
+
+model Capability {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  type        String   // data_processing, decision_making, integration, generation, analysis, communication, workflow_execution
+  status      String   @default("active") // active, degraded, offline
+  dependencies Json    @default("[]") // Other capability IDs
+  metrics     Json     @default("{}") // CapabilityMetrics
+  learnedAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model KnowledgeNode {
+  id          String   @id @default(cuid())
+  type        String   // entity, concept, process, rule, relationship
+  name        String
+  properties  Json     @default("{}")
+  connections Json     @default("[]") // KnowledgeEdge[]
+  confidence  Float    @default(1.0)
+  source      String   @default("configured") // learned, configured, inferred
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([type])
+  @@index([name])
+}
+
+model Workflow {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  trigger     Json     // WorkflowTrigger
+  steps       Json     @default("[]") // WorkflowStep[] (legacy JSON)
+  status      String   @default("draft") // draft, active, paused, archived
+  createdById String?
+  createdBy   Agent?   @relation("WorkflowCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  executions    WorkflowExecution[]
+  workflowSteps WorkflowStep[]
+}
+
+model WorkflowExecution {
+  id          String   @id @default(cuid())
+  workflowId  String
+  workflow    Workflow @relation(fields: [workflowId], references: [id])
+  status      String   @default("running") // running, completed, failed, cancelled
+  currentStep String?
+  context     Json     @default("{}")
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  tasks       Task[]
+  humanGates  HumanGate[]
+
+  @@index([workflowId])
+}
+
+model Task {
+  id            String   @id @default(cuid())
+  executionId   String?
+  execution     WorkflowExecution? @relation(fields: [executionId], references: [id])
+  agentId       String
+  agent         Agent    @relation(fields: [agentId], references: [id])
+  type          String
+  input         Json     @default("{}")
+  output        Json?
+  status        String   @default("pending") // pending, running, completed, failed, cancelled
+  priority      Int      @default(50)
+  createdAt     DateTime @default(now())
+  startedAt     DateTime?
+  completedAt   DateTime?
+
+  @@index([agentId])
+  @@index([executionId])
+  @@index([status])
+}
+
+model HumanGate {
+  id                String   @id @default(cuid())
+  executionId       String?
+  execution         WorkflowExecution? @relation(fields: [executionId], references: [id])
+  stepId            String?
+  taskId            String?
+  description       String   @db.Text
+  requiredApprovers Int      @default(1)
+  approvedBy        Json?    // String[]
+  context           Json?    // Additional context for the gate
+  status            String   @default("pending") // pending, approved, rejected, expired
+  resolvedAt        DateTime?
+  createdAt         DateTime @default(now())
+
+  @@index([executionId])
+  @@index([status])
+}
+
+model IntelligenceBrief {
+  id               String   @id @default(cuid())
+  period           String   // daily, weekly, monthly
+  executiveSummary String   @db.Text
+  marketIntel      Json     @default("[]") // MarketInsight[]
+  opsHealth        Json     @default("[]") // OpsHealthMetric[]
+  proactiveFixes   Json     @default("[]") // ProactiveFix[]
+  recommendations  Json     @default("[]") // Recommendation[]
+  generatedAt      DateTime @default(now())
+
+  @@index([period])
+}
+
+model Integration {
+  id        String   @id @default(cuid())
+  name      String
+  type      String   // telegram, twilio, email, webhook, api
+  status    String   @default("active") // active, inactive, error
+  config    Json     @default("{}")
+  lastUsed  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([type, name])
+}
+
+model FactoryEvent {
+  id          String   @id @default(cuid())
+  type        String   // request_received, intent_parsed, generation_started, selfmod:*, etc.
+  description String?  // Human-readable description of the event
+  taskId      String?
+  payload     Json     @default("{}")
+  metadata    Json?    // Additional metadata for self-modification proposals
+  status      String   @default("pending") // pending, approved, rejected, executing, completed, failed
+  timestamp   DateTime @default(now())
+
+  @@index([type])
+  @@index([taskId])
+  @@index([timestamp])
+  @@index([status])
+}
+
+// ============================================
+// DARK FACTORY GENERATED ADDITIONS
+// ============================================
+
+model AgentTemplate {
+  id               String   @id @default(cuid())
+  name             String
+  description      String
+  type             String   // PROCESSOR, COMMUNICATOR, ANALYST, ORCHESTRATOR, WATCHER
+  capabilities     Json     // Array of capability definitions
+  personalityConfig Json    // Default personality settings
+  defaultConfig    Json?    // Default runtime configuration
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([type])
+  @@index([isActive])
+}
+
+model WorkflowStep {
+  id          String   @id @default(cuid())
+  workflowId  String
+  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  order       Int
+  action      Json     // Action configuration
+  agentId     String?
+  agent       Agent?   @relation(fields: [agentId], references: [id])
+  conditions  Json?    // Conditions for execution
+  nextSteps   Json?    // Next step logic (branching)
+  timeout     Int?     // Timeout in seconds
+  retryConfig Json?    // Retry configuration
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([workflowId])
+  @@index([agentId])
+  @@index([order])
+}
+
+// ============================================
+// EVENT BUS & SUBSCRIPTIONS
+// ============================================
+
+model Event {
+  id        String   @id @default(cuid())
+  source    String   // system, webhook, schedule, user
+  type      String   // event type identifier
+  payload   Json     @default("{}")
+  timestamp DateTime @default(now())
+  processed Boolean  @default(false)
+
+  @@index([source])
+  @@index([type])
+  @@index([timestamp])
+}
+
+model Subscription {
+  id          String   @id @default(cuid())
+  eventType   String   // event type to listen for
+  handlerType String   // workflow, agent, webhook
+  handlerId   String   // ID of the handler
+  isActive    Boolean  @default(true)
+  config      Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([eventType])
+  @@index([handlerType])
+  @@index([isActive])
+}
+
+model TaskDependency {
+  id            String   @id @default(cuid())
+  taskId        String
+  dependsOnId   String
+  status        String   @default("pending") // pending, satisfied, failed
+  createdAt     DateTime @default(now())
+
+  @@index([taskId])
+  @@index([dependsOnId])
+}
+
+// =============================================================================
+// MEMORY SYSTEM
+// The Ghost's persistent mind - episodic experiences, semantic knowledge
+// =============================================================================
+
+model Memory {
+  id            String    @id @default(cuid())
+  type          String    // episodic, semantic, procedural, working
+  source        String    // user_interaction, workflow_execution, agent_task, etc.
+  importance    String    @default("medium") // critical, high, medium, low, trivial
+  content       String    @db.Text
+  embedding     String?   @db.Text // JSON array of floats for vector search
+  metadata      Json      @default("{}")
+  associations  Json      @default("[]") // Array of related memory IDs
+  accessCount   Int       @default(0)
+  lastAccessed  DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  expiresAt     DateTime?
+  consolidated  Boolean   @default(false)
+
+  @@index([type])
+  @@index([source])
+  @@index([importance])
+  @@index([consolidated])
+  @@index([createdAt])
+  @@index([lastAccessed])
+}
+
+// =============================================================================
+// IDENTITY & RBAC SYSTEM
+// User, Role, Permission management with federation support
+// =============================================================================
+
+model GfsUser {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String?
+  passwordHash    String?   // Null for federated users
+  status          String    @default("active") // active, suspended, deactivated
+  
+  // Federation fields
+  federationProvider String?   // azure_ad, google, okta, local
+  federationId    String?     // External ID from the provider
+  
+  // Profile
+  avatar          String?
+  department      String?
+  title           String?
+  timezone        String    @default("UTC")
+  
+  // Security
+  mfaEnabled      Boolean   @default(false)
+  mfaSecret       String?
+  lastLogin       DateTime?
+  failedAttempts  Int       @default(0)
+  lockedUntil     DateTime?
+  
+  // Metadata
+  preferences     Json      @default("{}")
+  metadata        Json      @default("{}")
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  roles           UserRole[]
+  sessions        UserSession[]
+  auditLogs       AuditLog[]
+  securityEvents  SecurityEvent[]
+  
+  @@unique([federationProvider, federationId])
+  @@index([email])
+  @@index([status])
+  @@index([federationProvider])
+}
+
+model Role {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  displayName     String
+  description     String?
+  
+  // Role hierarchy
+  parentId        String?
+  parent          Role?     @relation("RoleHierarchy", fields: [parentId], references: [id])
+  children        Role[]    @relation("RoleHierarchy")
+  
+  // Type
+  type            String    @default("custom") // system, custom
+  isDefault       Boolean   @default(false) // Assigned to new users automatically
+  
+  // Metadata
+  metadata        Json      @default("{}")
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  users           UserRole[]
+  permissions     RolePermission[]
+  
+  @@index([type])
+  @@index([isDefault])
+}
+
+model Permission {
+  id              String    @id @default(cuid())
+  name            String    @unique  // e.g., "agent:create", "workflow:execute"
+  displayName     String
+  description     String?
+  
+  // Resource-Action pattern
+  resource        String    // agent, workflow, memory, factory, etc.
+  action          String    // create, read, update, delete, execute, approve
+  
+  // Scope
+  scope           String    @default("all") // all, own, team, department
+  
+  // Metadata
+  metadata        Json      @default("{}")
+  
+  createdAt       DateTime  @default(now())
+  
+  // Relations
+  roles           RolePermission[]
+  
+  @@unique([resource, action, scope])
+  @@index([resource])
+  @@index([action])
+}
+
+model UserRole {
+  id              String    @id @default(cuid())
+  userId          String
+  user            GfsUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId          String
+  role            Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  // Optional scope/context
+  scope           String?   // team ID, department, project, etc.
+  
+  // Validity
+  grantedAt       DateTime  @default(now())
+  expiresAt       DateTime?
+  grantedBy       String?   // User ID who granted this role
+  
+  @@unique([userId, roleId, scope])
+  @@index([userId])
+  @@index([roleId])
+}
+
+model RolePermission {
+  id              String    @id @default(cuid())
+  roleId          String
+  role            Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId    String
+  permission      Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  
+  // Conditions (for conditional permissions)
+  conditions      Json?     // e.g., {"department": "engineering"}
+  
+  grantedAt       DateTime  @default(now())
+  
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model UserSession {
+  id              String    @id @default(cuid())
+  userId          String
+  user            GfsUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Session info
+  token           String    @unique
+  ipAddress       String?
+  userAgent       String?
+  deviceFingerprint String?
+  
+  // Location (for anomaly detection)
+  geoCountry      String?
+  geoCity         String?
+  
+  // Status
+  status          String    @default("active") // active, expired, revoked
+  
+  createdAt       DateTime  @default(now())
+  expiresAt       DateTime
+  lastActivity    DateTime  @default(now())
+  
+  @@index([userId])
+  @@index([token])
+  @@index([status])
+}
+
+// =============================================================================
+// SECURITY & AUDIT
+// For the Sentinel Agent to monitor and report
+// =============================================================================
+
+model AuditLog {
+  id              String    @id @default(cuid())
+  
+  // Who
+  userId          String?
+  user            GfsUser?  @relation(fields: [userId], references: [id])
+  agentId         String?
+  sessionId       String?
+  
+  // What
+  action          String    // login, logout, create, update, delete, execute, approve, deny
+  resource        String    // user, role, agent, workflow, memory, etc.
+  resourceId      String?
+  
+  // Context
+  details         Json      @default("{}")
+  previousState   Json?     // For updates
+  newState        Json?     // For updates
+  
+  // Result
+  success         Boolean   @default(true)
+  errorMessage    String?
+  
+  // Request info
+  ipAddress       String?
+  userAgent       String?
+  
+  timestamp       DateTime  @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([timestamp])
+  @@index([success])
+}
+
+model SecurityEvent {
+  id              String    @id @default(cuid())
+  
+  // Event type
+  type            String    // failed_login, suspicious_activity, permission_violation, anomaly_detected
+  severity        String    @default("medium") // critical, high, medium, low, info
+  
+  // Who
+  userId          String?
+  user            GfsUser?  @relation(fields: [userId], references: [id])
+  ipAddress       String?
+  
+  // What
+  description     String
+  details         Json      @default("{}")
+  
+  // Detection
+  detectedBy      String    @default("system") // system, sentinel, manual
+  riskScore       Int       @default(50) // 0-100
+  
+  // Resolution
+  status          String    @default("open") // open, investigating, resolved, false_positive
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  resolution      String?
+  
+  timestamp       DateTime  @default(now())
+  
+  @@index([type])
+  @@index([severity])
+  @@index([userId])
+  @@index([status])
+  @@index([timestamp])
+}
+
+model BehavioralFingerprint {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  
+  // Typical behavior patterns
+  typicalLoginHours   Json    @default("[]") // Array of hour ranges [8, 18]
+  typicalDays         Json    @default("[]") // Array of weekdays [1, 2, 3, 4, 5]
+  typicalLocations    Json    @default("[]") // Array of {country, city}
+  typicalIpRanges     Json    @default("[]") // Array of IP prefixes
+  typicalUserAgents   Json    @default("[]") // Array of user agent patterns
+  
+  // Activity patterns
+  avgDailyActions     Int     @default(0)
+  avgSessionDuration  Int     @default(0) // in minutes
+  commonResources     Json    @default("[]") // Most accessed resources
+  commonActions       Json    @default("[]") // Most common actions
+  
+  // Risk factors
+  baselineRiskScore   Int     @default(0) // 0-100
+  
+  lastUpdated         DateTime @default(now())
+  createdAt           DateTime @default(now())
+  
+  @@index([userId])
+}
+
+// ============================================
+// HEARTBEAT & SENTINEL MODELS
+// ============================================
+
+model HealthMetric {
+  id              String    @id @default(cuid())
+  
+  // Component being monitored
+  component       String    // system, agent, database, api, integration, workflow
+  componentId     String?   // Optional: specific agent ID, integration ID, etc.
+  componentName   String?
+  
+  // Health status
+  status          String    @default("healthy") // healthy, degraded, critical, offline, unknown
+  statusMessage   String?
+  
+  // Metrics
+  latency         Int?      // Response time in ms
+  uptime          Float?    // Percentage 0-100
+  memoryUsage     Float?    // Percentage 0-100
+  cpuUsage        Float?    // Percentage 0-100
+  errorRate       Float?    // Percentage 0-100
+  requestCount    Int?      // Requests in last interval
+  
+  // Custom metrics as JSON
+  customMetrics   Json      @default("{}")
+  
+  // Heartbeat tracking
+  lastHeartbeat   DateTime  @default(now())
+  missedBeats     Int       @default(0)
+  consecutiveFails Int      @default(0)
+  
+  timestamp       DateTime  @default(now())
+  
+  @@index([component])
+  @@index([componentId])
+  @@index([status])
+  @@index([timestamp])
+}
+
+model SystemHealthSnapshot {
+  id              String    @id @default(cuid())
+  
+  // Overall system health
+  overallStatus   String    @default("healthy") // healthy, degraded, critical, offline
+  healthScore     Int       @default(100) // 0-100
+  
+  // Component summaries
+  agentCount      Int       @default(0)
+  activeAgents    Int       @default(0)
+  healthyAgents   Int       @default(0)
+  
+  workflowsActive Int       @default(0)
+  workflowsFailed Int       @default(0)
+  
+  tasksQueued     Int       @default(0)
+  tasksFailed     Int       @default(0)
+  
+  // Performance metrics
+  avgLatency      Int?      // ms
+  errorRate       Float?    // percentage
+  
+  // Alerts
+  criticalAlerts  Int       @default(0)
+  warningAlerts   Int       @default(0)
+  
+  // Raw component health
+  componentHealth Json      @default("{}")
+  
+  timestamp       DateTime  @default(now())
+  
+  @@index([timestamp])
+  @@index([overallStatus])
+}
+
+model SentinelAlert {
+  id              String    @id @default(cuid())
+  
+  // Alert classification
+  type            String    // anomaly, threat, policy_violation, system_failure, suspicious_activity
+  severity        String    @default("medium") // critical, high, medium, low
+  category        String    // security, performance, compliance, operational
+  
+  // What triggered the alert
+  source          String    // heartbeat, behavioral_analysis, policy_engine, manual
+  triggerId       String?   // Event ID, metric ID, etc.
+  
+  // Target
+  targetType      String?   // user, agent, workflow, integration, system
+  targetId        String?
+  targetName      String?
+  
+  // Alert details
+  title           String
+  description     String
+  evidence        Json      @default("{}") // Supporting data
+  
+  // Risk assessment
+  riskScore       Int       @default(50) // 0-100
+  confidence      Float     @default(0.8) // 0-1
+  
+  // Response
+  status          String    @default("open") // open, acknowledged, investigating, mitigated, resolved, false_positive
+  autoResponse    Json?     // Actions taken automatically
+  manualResponse  Json?     // Actions taken by humans
+  
+  // Assignment
+  assignedTo      String?
+  acknowledgedAt  DateTime?
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  resolution      String?
+  
+  // Timing
+  detectedAt      DateTime  @default(now())
+  firstOccurrence DateTime  @default(now())
+  occurrenceCount Int       @default(1)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([type])
+  @@index([severity])
+  @@index([status])
+  @@index([detectedAt])
+  @@index([targetType, targetId])
+}
+
+model SentinelRule {
+  id              String    @id @default(cuid())
+  
+  // Rule identification
+  name            String    @unique
+  description     String?
+  
+  // Rule type
+  type            String    // threshold, pattern, anomaly, policy, correlation
+  category        String    // security, performance, compliance, operational
+  
+  // Rule definition
+  condition       Json      // Rule condition in structured format
+  threshold       Json?     // Threshold values if applicable
+  pattern         String?   // Regex or pattern string
+  
+  // Triggering
+  triggerOn       String    // event, metric, schedule, manual
+  eventTypes      Json      @default("[]") // Event types this rule monitors
+  
+  // Response
+  severity        String    @default("medium") // Default severity when triggered
+  autoRespond     Boolean   @default(false)
+  responseActions Json      @default("[]") // Automated response actions
+  
+  // State
+  enabled         Boolean   @default(true)
+  lastTriggered   DateTime?
+  triggerCount    Int       @default(0)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([type])
+  @@index([enabled])
+}

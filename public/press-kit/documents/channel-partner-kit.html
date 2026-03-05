@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Channel Partner Program - GhostFoundry-Syndicate</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0f1a 0%, #1a1f35 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .logo {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .section {
+            background: rgba(26, 31, 53, 0.6);
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            border-radius: 16px;
+            padding: 35px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-title .icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(168, 85, 247, 0.2));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        
+        .ideal-partners {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .partner-type {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .partner-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        
+        .partner-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #00d4ff;
+        }
+        
+        .partner-desc {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .revenue-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .revenue-table th {
+            text-align: left;
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.1);
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .revenue-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+        
+        .revenue-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .highlight {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .benefit-card {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .benefit-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+        
+        .benefit-desc {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .process-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .step {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #00d4ff, #a855f7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        
+        .step-desc {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .cta-box {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(0, 212, 255, 0.15));
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .cta-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .cta-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 25px;
+        }
+        
+        .cta-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #ffffff;
+            font-weight: 600;
+            padding: 16px 40px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">👻 GhostFoundry-Syndicate</div>
+            <div class="badge">🤝 Channel Partner Program</div>
+            <h1>Grow Your Practice with AI-Powered Operations</h1>
+            <p class="subtitle">Deploy Syndicate to your clients, earn recurring revenue, and become their most valuable partner in the AI era.</p>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">
+                <div class="icon">🎯</div>
+                Ideal Partners
+            </div>
+            <div class="ideal-partners">
+                <div class="partner-type">
+                    <div class="partner-icon">💼</div>
+                    <div class="partner-title">Fractional CFOs</div>
+                    <div class="partner-desc">Help clients automate finance operations while you focus on strategy</div>
+                </div>
+                <div class="partner-type">
+                    <div class="partner-icon">⚙️</div>
+                    <div class="partner-title">RevOps Consultants</div>
+                    <div class="partner-desc">Deploy AI agents to streamline the entire revenue engine</div>
+                </div>
+                <div class="partner-type">
+                    <div class="partner-icon">🛠️</div>
+                    <div class="partner-title">MSPs & IT Consultants</div>
+                    <div class="partner-desc">Add AI operations to your service stack for SMB clients</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">
+                <div class="icon">💰</div>
+                Revenue Share Structure
+            </div>
+            <table class="revenue-table">
+                <tr>
+                    <th>Tier</th>
+                    <th>Active Clients</th>
+                    <th>Revenue Share</th>
+                    <th>Monthly Potential*</th>
+                </tr>
+                <tr>
+                    <td>Partner</td>
+                    <td>1-5 clients</td>
+                    <td class="highlight">15%</td>
+                    <td>$750 - $3,750</td>
+                </tr>
+                <tr>
+                    <td>Silver Partner</td>
+                    <td>6-15 clients</td>
+                    <td class="highlight">20%</td>
+                    <td>$6,000 - $15,000</td>
+                </tr>
+                <tr>
+                    <td>Gold Partner</td>
+                    <td>16-30 clients</td>
+                    <td class="highlight">25%</td>
+                    <td>$20,000 - $37,500</td>
+                </tr>
+                <tr>
+                    <td>Platinum Partner</td>
+                    <td>31+ clients</td>
+                    <td class="highlight">30%</td>
+                    <td>$46,500+</td>
+                </tr>
+            </table>
+            <p style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 15px;">*Based on average client spend of $1,000/month. Actual results vary.</p>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">
+                <div class="icon">🎁</div>
+                Partner Benefits
+            </div>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-title">📚 Training & Certification</div>
+                    <div class="benefit-desc">Comprehensive training program to become a certified Syndicate implementer. Badge for your website and LinkedIn.</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-title">🛠️ Implementation Support</div>
+                    <div class="benefit-desc">Dedicated partner success manager. Co-implementation support for your first 3 clients.</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-title">💬 Co-Marketing</div>
+                    <div class="benefit-desc">Joint webinars, case studies, and content. Listed in our partner directory. Lead sharing.</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-title">🔑 Partner Portal</div>
+                    <div class="benefit-desc">Dedicated dashboard to manage clients, track revenue, access resources, and submit support tickets.</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-title">💳 Flexible Billing</div>
+                    <div class="benefit-desc">Bill your clients directly with your markup, or let us bill and send you commission. Your choice.</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-title">🚀 Early Access</div>
+                    <div class="benefit-desc">Preview new features before general release. Input on product roadmap. Beta testing opportunities.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">
+                <div class="icon">📍</div>
+                How to Get Started
+            </div>
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Apply to the Partner Program</div>
+                        <div class="step-desc">Fill out a quick application. We'll review and respond within 48 hours.</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Complete Certification Training</div>
+                        <div class="step-desc">2-hour online training covering product, implementation, and sales enablement.</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Deploy Your First Client</div>
+                        <div class="step-desc">Our team co-implements with you on your first deployment. Learn by doing.</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Scale Your Practice</div>
+                        <div class="step-desc">Deploy to more clients, climb the tiers, increase your revenue share.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="cta-box">
+            <h2 class="cta-title">Ready to Partner?</h2>
+            <p class="cta-subtitle">Join the growing network of consultancies building the future of AI-powered operations.</p>
+            <a href="mailto:partners@spookysoftwaresyndicate.com" class="cta-btn">Apply to Partner Program</a>
+        </div>
+        
+        <div class="footer">
+            <p>👻 GhostFoundry-Syndicate | SpookySoftwareSyndicate.com | partners@spookysoftwaresyndicate.com</p>
+        </div>
+    </div>
+</body>
+</html>

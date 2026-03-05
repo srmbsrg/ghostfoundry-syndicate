@@ -1,0 +1,45 @@
+// ============================================
+// DARK FACTORY GENERATED MODELS
+// Generated: 2026-03-05T00:06:33.497Z
+// ============================================
+
+model WorkflowStep {
+  id String @id @default(cuid())
+  workflowId String @default(cuid())
+  name String
+  type String
+  agentId String?
+  config String
+  inputs String
+  outputs Json
+  order Int
+  branchCondition String
+  createdAt DateTime
+  updatedAt DateTime
+  workflowRuntimeEngineId String
+  workflowRuntimeEngine WorkflowRuntimeEngine @relation(fields: [workflowRuntimeEngineId], references: [id])
+  agentId String
+  agent Agent @relation(fields: [agentId], references: [id])
+
+  @@index([workflowId])
+  @@index([type])
+  @@index([agentId])
+  @@index([workflowRuntimeEngineId])
+  @@index([agentId])
+}
+
+model HumanGate {
+  id String @id @default(cuid())
+  stepId String @default(cuid())
+  approverId String @default(cuid())
+  status String
+  createdAt DateTime
+  updatedAt DateTime
+  workflowStepId String
+  workflowStep WorkflowStep @relation(fields: [workflowStepId], references: [id])
+
+  @@index([stepId])
+  @@index([approverId])
+  @@index([status])
+  @@index([workflowStepId])
+}
