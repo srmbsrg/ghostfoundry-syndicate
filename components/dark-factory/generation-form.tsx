@@ -13,6 +13,7 @@ import {
   Layers,
   Zap,
 } from 'lucide-react';
+import { VoiceInputButton } from '@/components/ui/voice-input';
 
 interface GenerationFormProps {
   onComplete: () => void;
@@ -110,14 +111,22 @@ export function GenerationForm({ onComplete }: GenerationFormProps) {
           <label className="block text-sm font-medium text-gray-300 mb-2">
             What do you want to build?
           </label>
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="e.g., Create an API that tracks customer orders with status updates, shipping info, and order history..."
-            rows={4}
-            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 resize-none"
-            disabled={isGenerating}
-          />
+          <div className="relative">
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="e.g., Create an API that tracks customer orders with status updates, shipping info, and order history..."
+              rows={4}
+              className="w-full px-4 py-3 pr-14 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 resize-none"
+              disabled={isGenerating}
+            />
+            <div className="absolute top-3 right-3">
+              <VoiceInputButton 
+                onTranscript={(text) => setPrompt(prev => prev + (prev ? ' ' : '') + text)}
+                disabled={isGenerating}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-4">

@@ -6,7 +6,7 @@ const PROTECTED_PATHS = ['/ghost-control', '/dark-factory'];
 
 // Credentials
 const VALID_USERNAME = 'Syndicate';
-const VALID_PASSWORD = 'Boo0282024!*';
+const VALID_PASSWORD = 'Boo02052024';
 
 function isProtectedPath(pathname: string): boolean {
   return PROTECTED_PATHS.some(path => pathname.startsWith(path));

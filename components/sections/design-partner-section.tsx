@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Send, CheckCircle, Loader2, Users, Sparkles, Gift } from 'lucide-react';
+import { VoiceInputButton } from '@/components/ui/voice-input';
 
 const companySizes = [
   '1-20 employees',
@@ -136,41 +137,59 @@ export default function DesignPartnerSection() {
                   
                   <div>
                     <label className="block text-sm text-gray-400 mb-2">Company Name</label>
-                    <input
-                      type="text"
-                      name="companyName"
-                      value={formData.companyName}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all"
-                      placeholder="Acme Inc."
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        name="companyName"
+                        value={formData.companyName}
+                        onChange={handleChange}
+                        required
+                        className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all"
+                        placeholder="Acme Inc."
+                      />
+                      <VoiceInputButton 
+                        onTranscript={(text) => setFormData(prev => ({ ...prev, companyName: prev.companyName + text }))}
+                        disabled={isSubmitting}
+                      />
+                    </div>
                   </div>
                   
                   <div>
                     <label className="block text-sm text-gray-400 mb-2">Your Name</label>
-                    <input
-                      type="text"
-                      name="contactName"
-                      value={formData.contactName}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all"
-                      placeholder="Jane Smith"
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        name="contactName"
+                        value={formData.contactName}
+                        onChange={handleChange}
+                        required
+                        className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all"
+                        placeholder="Jane Smith"
+                      />
+                      <VoiceInputButton 
+                        onTranscript={(text) => setFormData(prev => ({ ...prev, contactName: prev.contactName + text }))}
+                        disabled={isSubmitting}
+                      />
+                    </div>
                   </div>
                   
                   <div>
                     <label className="block text-sm text-gray-400 mb-2">Work Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all"
-                      placeholder="jane@acme.com"
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                        className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all"
+                        placeholder="jane@acme.com"
+                      />
+                      <VoiceInputButton 
+                        onTranscript={(text) => setFormData(prev => ({ ...prev, email: prev.email + text.toLowerCase().replace(/\s+/g, '') }))}
+                        disabled={isSubmitting}
+                      />
+                    </div>
                   </div>
                   
                   <div>
