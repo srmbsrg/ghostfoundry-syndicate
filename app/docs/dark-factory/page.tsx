@@ -1,547 +1,489 @@
-// Dark Factory Documentation
-import { Metadata } from 'next';
-import Link from 'next/link';
-import Header from '@/components/ui/header';
-import Footer from '@/components/ui/footer';
-import { Factory, ArrowLeft, FileCode, Zap, TestTube, Settings, CheckCircle, AlertTriangle, Code, Terminal, Copy, Play, Eye } from 'lucide-react';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Dark Factory Documentation | GhostFoundry-Syndicate',
-  description: 'Complete guide to using the Dark Factory code generation system',
-};
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import Image from 'next/image';
+import {
+  Factory,
+  ArrowRight,
+  MessageSquare,
+  Brain,
+  Code,
+  TestTube,
+  CheckCircle,
+  Rocket,
+  Clock,
+  AlertCircle,
+  Play,
+  Pause,
+  XCircle,
+  FileCode,
+  Database,
+  Layers,
+  GitBranch,
+  Shield,
+  Eye,
+  Sparkles,
+  Home,
+  ChevronRight,
+} from 'lucide-react';
+import { InternalHeader } from '@/components/ui/internal-header';
+
+const PIPELINE_STAGES = [
+  {
+    id: 1,
+    name: 'Intent Parsing',
+    icon: <Brain className="w-6 h-6" />,
+    color: 'from-purple-500 to-purple-600',
+    bgColor: 'bg-purple-500/20',
+    borderColor: 'border-purple-500/30',
+    description: 'GPT-4.1 analyzes your natural language request and extracts structured specifications.',
+    details: [
+      'Identifies intent type (create API, model, component, etc.)',
+      'Extracts entities, properties, and relationships',
+      'Determines confidence score',
+      'Maps dependencies to existing system components',
+    ],
+    output: 'ParsedIntent object with entities, actions, and confidence',
+  },
+  {
+    id: 2,
+    name: 'Schema Generation',
+    icon: <Database className="w-6 h-6" />,
+    color: 'from-cyan-500 to-cyan-600',
+    bgColor: 'bg-cyan-500/20',
+    borderColor: 'border-cyan-500/30',
+    description: 'Converts parsed intent into database schemas and API specifications.',
+    details: [
+      'Generates Prisma model definitions',
+      'Creates REST API endpoint specs',
+      'Defines TypeScript interfaces',
+      'Maps entity relationships',
+    ],
+    output: 'GeneratedSchema with Prisma models and API specs',
+  },
+  {
+    id: 3,
+    name: 'Code Generation',
+    icon: <Code className="w-6 h-6" />,
+    color: 'from-green-500 to-green-600',
+    bgColor: 'bg-green-500/20',
+    borderColor: 'border-green-500/30',
+    description: 'Produces production-ready code files from the schemas.',
+    details: [
+      'Prisma model files (prisma/generated-models.prisma)',
+      'API route handlers (app/api/**/route.ts)',
+      'TypeScript type definitions (lib/types/generated.ts)',
+      'Test files (__tests__/*.test.ts)',
+    ],
+    output: 'Array of GeneratedArtifact objects',
+  },
+  {
+    id: 4,
+    name: 'Validation',
+    icon: <TestTube className="w-6 h-6" />,
+    color: 'from-yellow-500 to-yellow-600',
+    bgColor: 'bg-yellow-500/20',
+    borderColor: 'border-yellow-500/30',
+    description: 'Validates generated code for syntax errors and basic quality checks.',
+    details: [
+      'TypeScript syntax validation',
+      'Undefined reference detection',
+      'Empty content checks',
+      'Schema consistency verification',
+    ],
+    output: 'Validation result with issues list',
+  },
+  {
+    id: 5,
+    name: 'Awaiting Approval',
+    icon: <Clock className="w-6 h-6" />,
+    color: 'from-orange-500 to-orange-600',
+    bgColor: 'bg-orange-500/20',
+    borderColor: 'border-orange-500/30',
+    description: 'Human review checkpoint - you decide whether to deploy the generated code.',
+    details: [
+      'Review all generated artifacts',
+      'Inspect code quality and correctness',
+      'Approve all or select specific artifacts',
+      'Reject and regenerate if needed',
+    ],
+    output: 'Human approval to proceed to deployment',
+  },
+  {
+    id: 6,
+    name: 'Deployment',
+    icon: <Rocket className="w-6 h-6" />,
+    color: 'from-pink-500 to-pink-600',
+    bgColor: 'bg-pink-500/20',
+    borderColor: 'border-pink-500/30',
+    description: 'Writes approved artifacts to the actual codebase.',
+    details: [
+      'Creates directories if needed',
+      'Writes files to target paths',
+      'Updates deployment records',
+      'Logs all deployment actions',
+    ],
+    output: 'Deployed code files in the project',
+  },
+];
+
+const STATUS_DEFINITIONS = [
+  {
+    status: 'parsing',
+    icon: <Brain className="w-5 h-5" />,
+    color: 'text-purple-400',
+    bg: 'bg-purple-500/20',
+    description: 'Analyzing your natural language request',
+  },
+  {
+    status: 'generating',
+    icon: <Code className="w-5 h-5" />,
+    color: 'text-cyan-400',
+    bg: 'bg-cyan-500/20',
+    description: 'Creating schemas and code files',
+  },
+  {
+    status: 'validating',
+    icon: <TestTube className="w-5 h-5" />,
+    color: 'text-yellow-400',
+    bg: 'bg-yellow-500/20',
+    description: 'Checking code for errors',
+  },
+  {
+    status: 'awaiting_approval',
+    icon: <Clock className="w-5 h-5" />,
+    color: 'text-orange-400',
+    bg: 'bg-orange-500/20',
+    description: 'Ready for human review and approval',
+  },
+  {
+    status: 'deploying',
+    icon: <Rocket className="w-5 h-5" />,
+    color: 'text-pink-400',
+    bg: 'bg-pink-500/20',
+    description: 'Writing files to codebase',
+  },
+  {
+    status: 'completed',
+    icon: <CheckCircle className="w-5 h-5" />,
+    color: 'text-green-400',
+    bg: 'bg-green-500/20',
+    description: 'Successfully deployed',
+  },
+  {
+    status: 'failed',
+    icon: <XCircle className="w-5 h-5" />,
+    color: 'text-red-400',
+    bg: 'bg-red-500/20',
+    description: 'Generation or deployment failed',
+  },
+];
+
+const ARTIFACT_TYPES = [
+  { type: 'prisma_model', icon: <Database className="w-4 h-4" />, label: 'Prisma Model', path: 'prisma/' },
+  { type: 'api_route', icon: <GitBranch className="w-4 h-4" />, label: 'API Route', path: 'app/api/' },
+  { type: 'typescript_type', icon: <FileCode className="w-4 h-4" />, label: 'TypeScript Types', path: 'lib/types/' },
+  { type: 'test_file', icon: <TestTube className="w-4 h-4" />, label: 'Test File', path: '__tests__/' },
+  { type: 'react_component', icon: <Layers className="w-4 h-4" />, label: 'React Component', path: 'components/' },
+];
 
 export default function DarkFactoryDocsPage() {
   return (
     <div className="min-h-screen bg-[#0a0f1a]">
-      <Header />
-      <main className="pt-24 pb-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          {/* Back Link */}
-          <Link href="/docs" className="inline-flex items-center gap-2 text-gray-400 hover:text-cyan-400 mb-8">
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Docs</span>
-          </Link>
+      <InternalHeader />
+      
+      <main className="pt-20 pb-16">
+        <div className="max-w-6xl mx-auto px-6">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-gray-400 mb-8">
+            <Link href="/docs" className="hover:text-cyan-400 transition-colors">Documentation</Link>
+            <ChevronRight className="w-4 h-4" />
+            <span className="text-cyan-400">Dark Factory</span>
+          </div>
 
-          {/* Header */}
-          <div className="mb-12">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Factory className="w-6 h-6 text-white" />
+          {/* Hero */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-16"
+          >
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-cyan-500/30">
+                <Factory className="w-10 h-10 text-cyan-400" />
               </div>
-              <h1 className="text-4xl font-bold text-white">Dark Factory</h1>
+              <div>
+                <h1 className="text-4xl font-bold text-white">Dark Factory</h1>
+                <p className="text-gray-400">The code generation pipeline that builds itself</p>
+              </div>
             </div>
-            <p className="text-xl text-gray-400">
-              The self-building software factory that generates production-ready code from natural language specifications.
+            <p className="text-lg text-gray-300 max-w-3xl">
+              The Dark Factory is GhostFoundry-Syndicate's autonomous code generation system. 
+              Tell it what you want to build in plain English, and it will parse your intent, 
+              generate schemas, write production code, validate it, and deploy—all with human 
+              oversight at the critical "approval" checkpoint.
             </p>
-          </div>
+          </motion.div>
 
-          {/* Table of Contents */}
-          <nav className="glass-card p-6 rounded-xl mb-12">
-            <h2 className="text-lg font-semibold text-white mb-4">Contents</h2>
-            <ul className="space-y-2">
-              <li><a href="#overview" className="text-cyan-400 hover:underline">Overview</a></li>
-              <li><a href="#spec-format" className="text-cyan-400 hover:underline">Spec Format</a></li>
-              <li><a href="#api-reference" className="text-cyan-400 hover:underline">API Reference</a></li>
-              <li><a href="#testing" className="text-cyan-400 hover:underline">Testing Scenarios</a></li>
-              <li><a href="#deployment" className="text-cyan-400 hover:underline">Deployment</a></li>
-              <li><a href="#examples" className="text-cyan-400 hover:underline">Examples</a></li>
-            </ul>
-          </nav>
+          {/* How It Works */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-16"
+          >
+            <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
+              <Sparkles className="w-6 h-6 text-cyan-400" />
+              How It Works: The 6-Stage Pipeline
+            </h2>
 
-          {/* Content */}
-          <div className="prose prose-invert prose-lg max-w-none">
-            
-            {/* Overview */}
-            <section id="overview" className="mb-16">
-              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                <Eye className="w-6 h-6 text-purple-400" />
-                Overview
-              </h2>
-              <div className="glass-card p-6 rounded-xl">
-                <p className="text-gray-300 mb-4">
-                  The Dark Factory is a recursive, self-referential code generation system. It takes natural language 
-                  specifications and produces:
-                </p>
-                <ul className="space-y-2 text-gray-300">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                    <span><strong>Prisma schemas</strong> - Database models with relations</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                    <span><strong>API routes</strong> - Next.js API endpoints with full CRUD</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                    <span><strong>TypeScript types</strong> - Type definitions matching schemas</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                    <span><strong>Test files</strong> - Automated test suites</span>
-                  </li>
-                </ul>
+            <div className="relative">
+              {/* Connection Line */}
+              <div className="absolute left-8 top-16 bottom-16 w-0.5 bg-gradient-to-b from-purple-500 via-cyan-500 to-pink-500 hidden lg:block" />
+
+              <div className="space-y-8">
+                {PIPELINE_STAGES.map((stage, index) => (
+                  <motion.div
+                    key={stage.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 + index * 0.1 }}
+                    className="relative"
+                  >
+                    <div className="flex gap-6">
+                      {/* Stage Number */}
+                      <div className={`relative z-10 flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br ${stage.color} flex items-center justify-center text-white shadow-lg`}>
+                        {stage.icon}
+                      </div>
+
+                      {/* Content */}
+                      <div className={`flex-1 glass-card rounded-xl p-6 ${stage.borderColor} border`}>
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="px-2 py-1 rounded-full text-xs font-mono bg-white/10 text-gray-300">
+                            Stage {stage.id}
+                          </span>
+                          <h3 className="text-xl font-semibold text-white">{stage.name}</h3>
+                        </div>
+                        
+                        <p className="text-gray-400 mb-4">{stage.description}</p>
+                        
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-300 mb-2">What happens:</h4>
+                            <ul className="space-y-1">
+                              {stage.details.map((detail, i) => (
+                                <li key={i} className="text-sm text-gray-500 flex items-start gap-2">
+                                  <ArrowRight className="w-3 h-3 mt-1 text-cyan-500 flex-shrink-0" />
+                                  {detail}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className={`p-3 rounded-lg ${stage.bgColor}`}>
+                            <h4 className="text-sm font-medium text-gray-300 mb-1">Output:</h4>
+                            <p className="text-sm text-gray-400 font-mono">{stage.output}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
+            </div>
+          </motion.section>
 
-              <div className="mt-6 p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-purple-400 mt-0.5" />
+          {/* What is "Awaiting Approval"? */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mb-16"
+          >
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+              <Shield className="w-6 h-6 text-orange-400" />
+              What Does "Awaiting Approval" Mean?
+            </h2>
+
+            <div className="glass-card rounded-xl p-8 border border-orange-500/30">
+              <div className="flex items-start gap-6">
+                <div className="p-4 rounded-xl bg-orange-500/20 flex-shrink-0">
+                  <Clock className="w-8 h-8 text-orange-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-3">Human-in-the-Loop Checkpoint</h3>
+                  <p className="text-gray-400 mb-4">
+                    "Awaiting Approval" is the <strong className="text-orange-400">critical safety checkpoint</strong> in the Dark Factory pipeline. 
+                    After the system generates and validates code, it <strong>pauses and waits for human review</strong> before 
+                    deploying anything to your codebase.
+                  </p>
+                  
+                  <div className="grid md:grid-cols-2 gap-6 mt-6">
+                    <div className="p-4 rounded-lg bg-white/5">
+                      <h4 className="font-medium text-white mb-2 flex items-center gap-2">
+                        <Eye className="w-4 h-4 text-cyan-400" />
+                        What You Can Do
+                      </h4>
+                      <ul className="space-y-2 text-sm text-gray-400">
+                        <li>• Review all generated code artifacts</li>
+                        <li>• Inspect the code quality and logic</li>
+                        <li>• See exactly which files will be created</li>
+                        <li>• Approve all or select specific artifacts</li>
+                        <li>• Reject and request regeneration</li>
+                      </ul>
+                    </div>
+                    <div className="p-4 rounded-lg bg-white/5">
+                      <h4 className="font-medium text-white mb-2 flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-green-400" />
+                        Why This Matters
+                      </h4>
+                      <ul className="space-y-2 text-sm text-gray-400">
+                        <li>• Prevents auto-deployment of bad code</li>
+                        <li>• Maintains human oversight of AI actions</li>
+                        <li>• Allows review before production impact</li>
+                        <li>• Audit trail of all approvals</li>
+                        <li>• Constitutional AI compliance</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Status Reference */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mb-16"
+          >
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+              <Layers className="w-6 h-6 text-cyan-400" />
+              Task Status Reference
+            </h2>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {STATUS_DEFINITIONS.map((item) => (
+                <div key={item.status} className="glass-card rounded-xl p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`p-2 rounded-lg ${item.bg}`}>
+                      <span className={item.color}>{item.icon}</span>
+                    </div>
+                    <code className="text-sm font-mono text-white">{item.status}</code>
+                  </div>
+                  <p className="text-sm text-gray-400">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </motion.section>
+
+          {/* Artifact Types */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mb-16"
+          >
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+              <FileCode className="w-6 h-6 text-green-400" />
+              Generated Artifact Types
+            </h2>
+
+            <div className="glass-card rounded-xl p-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {ARTIFACT_TYPES.map((artifact) => (
+                  <div key={artifact.type} className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
+                    <div className="p-2 rounded-lg bg-cyan-500/20 text-cyan-400">
+                      {artifact.icon}
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">{artifact.label}</div>
+                      <div className="text-xs text-gray-500 font-mono">{artifact.path}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Step-by-Step Guide */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="mb-16"
+          >
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+              <Play className="w-6 h-6 text-purple-400" />
+              Step-by-Step: Building Something
+            </h2>
+
+            <div className="glass-card rounded-xl p-8">
+              <ol className="space-y-6">
+                <li className="flex gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold">1</span>
                   <div>
-                    <strong className="text-purple-300">Key Insight:</strong>
-                    <p className="text-gray-400 mt-1">
-                      The Dark Factory was built by itself. It's the first proof of its own capability - 
-                      a system that can write systems.
-                    </p>
+                    <h4 className="text-white font-medium">Go to Dark Factory Dashboard</h4>
+                    <p className="text-gray-400 text-sm">Navigate to <code className="text-cyan-400">/dark-factory</code> and click the "Generate" tab.</p>
                   </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Spec Format */}
-            <section id="spec-format" className="mb-16">
-              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                <FileCode className="w-6 h-6 text-cyan-400" />
-                Spec Format
-              </h2>
-              
-              <p className="text-gray-300 mb-6">
-                Specs can be entered in two ways: <strong>Natural Language</strong> or <strong>Structured JSON</strong>.
-              </p>
-
-              {/* Natural Language */}
-              <h3 className="text-xl font-semibold text-white mt-8 mb-4">1. Natural Language Specs</h3>
-              <p className="text-gray-400 mb-4">Write plain English descriptions. The LLM parser will extract structure.</p>
-              
-              <div className="bg-[#1a1f2e] rounded-lg overflow-hidden mb-6">
-                <div className="flex items-center justify-between px-4 py-2 bg-[#252b3b] border-b border-white/10">
-                  <span className="text-sm text-gray-400">Natural Language Example</span>
-                  <Code className="w-4 h-4 text-gray-500" />
-                </div>
-                <pre className="p-4 text-sm text-green-400 overflow-x-auto">
-{`Create a customer support ticket system with:
-- Tickets that have a title, description, priority (low/medium/high/urgent), 
-  and status (open/in_progress/resolved/closed)
-- Each ticket belongs to a customer (email, name)
-- Tickets can have multiple comments with author and timestamp
-- Support agents can be assigned to tickets
-- Track time spent on each ticket`}</pre>
-              </div>
-
-              <h4 className="text-lg font-semibold text-white mt-6 mb-3">Best Practices for Natural Language:</h4>
-              <ul className="space-y-2 text-gray-300 mb-6">
-                <li>• Be specific about field types (string, number, enum values)</li>
-                <li>• Describe relationships explicitly ("belongs to", "has many")</li>
-                <li>• Include constraints (required, unique, default values)</li>
-                <li>• Mention any computed or derived fields</li>
-              </ul>
-
-              {/* Structured JSON */}
-              <h3 className="text-xl font-semibold text-white mt-8 mb-4">2. Structured JSON Specs</h3>
-              <p className="text-gray-400 mb-4">For precise control, use the structured format:</p>
-              
-              <div className="bg-[#1a1f2e] rounded-lg overflow-hidden mb-6">
-                <div className="flex items-center justify-between px-4 py-2 bg-[#252b3b] border-b border-white/10">
-                  <span className="text-sm text-gray-400">Structured JSON Format</span>
-                  <Code className="w-4 h-4 text-gray-500" />
-                </div>
-                <pre className="p-4 text-sm text-cyan-400 overflow-x-auto">
-{`{
-  "name": "TicketSystem",
-  "description": "Customer support ticket management",
-  "entities": [
-    {
-      "name": "Ticket",
-      "fields": [
-        { "name": "title", "type": "String", "required": true },
-        { "name": "description", "type": "String" },
-        { "name": "priority", "type": "enum", "values": ["low", "medium", "high", "urgent"], "default": "medium" },
-        { "name": "status", "type": "enum", "values": ["open", "in_progress", "resolved", "closed"], "default": "open" },
-        { "name": "timeSpent", "type": "Int", "default": 0 }
-      ],
-      "relations": [
-        { "name": "customer", "type": "Customer", "relation": "many-to-one" },
-        { "name": "assignee", "type": "Agent", "relation": "many-to-one", "optional": true },
-        { "name": "comments", "type": "Comment", "relation": "one-to-many" }
-      ]
-    },
-    {
-      "name": "Customer",
-      "fields": [
-        { "name": "email", "type": "String", "unique": true },
-        { "name": "name", "type": "String" }
-      ]
-    },
-    {
-      "name": "Comment",
-      "fields": [
-        { "name": "content", "type": "String" },
-        { "name": "author", "type": "String" }
-      ]
-    },
-    {
-      "name": "Agent",
-      "fields": [
-        { "name": "name", "type": "String" },
-        { "name": "email", "type": "String", "unique": true }
-      ]
-    }
-  ],
-  "endpoints": [
-    { "method": "GET", "path": "/api/tickets", "description": "List all tickets with filters" },
-    { "method": "POST", "path": "/api/tickets", "description": "Create new ticket" },
-    { "method": "PATCH", "path": "/api/tickets/:id", "description": "Update ticket" },
-    { "method": "POST", "path": "/api/tickets/:id/assign", "description": "Assign agent to ticket" }
-  ]
-}`}</pre>
-              </div>
-
-              <h4 className="text-lg font-semibold text-white mt-6 mb-3">Field Types:</h4>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-white/5 p-4 rounded-lg">
-                  <code className="text-cyan-400">String</code>
-                  <p className="text-sm text-gray-500 mt-1">Text fields</p>
-                </div>
-                <div className="bg-white/5 p-4 rounded-lg">
-                  <code className="text-cyan-400">Int</code>
-                  <p className="text-sm text-gray-500 mt-1">Integer numbers</p>
-                </div>
-                <div className="bg-white/5 p-4 rounded-lg">
-                  <code className="text-cyan-400">Float</code>
-                  <p className="text-sm text-gray-500 mt-1">Decimal numbers</p>
-                </div>
-                <div className="bg-white/5 p-4 rounded-lg">
-                  <code className="text-cyan-400">Boolean</code>
-                  <p className="text-sm text-gray-500 mt-1">True/false</p>
-                </div>
-                <div className="bg-white/5 p-4 rounded-lg">
-                  <code className="text-cyan-400">DateTime</code>
-                  <p className="text-sm text-gray-500 mt-1">Timestamps</p>
-                </div>
-                <div className="bg-white/5 p-4 rounded-lg">
-                  <code className="text-cyan-400">Json</code>
-                  <p className="text-sm text-gray-500 mt-1">Flexible JSON data</p>
-                </div>
-                <div className="bg-white/5 p-4 rounded-lg">
-                  <code className="text-cyan-400">enum</code>
-                  <p className="text-sm text-gray-500 mt-1">Fixed set of values</p>
-                </div>
-                <div className="bg-white/5 p-4 rounded-lg">
-                  <code className="text-cyan-400">relation</code>
-                  <p className="text-sm text-gray-500 mt-1">Links to other entities</p>
-                </div>
-              </div>
-            </section>
-
-            {/* API Reference */}
-            <section id="api-reference" className="mb-16">
-              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                <Terminal className="w-6 h-6 text-green-400" />
-                API Reference
-              </h2>
-
-              {/* Generate Endpoint */}
-              <div className="glass-card p-6 rounded-xl mb-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-mono rounded">POST</span>
-                  <code className="text-white">/api/dark-factory/generate</code>
-                </div>
-                <p className="text-gray-400 mb-4">Submit a generation request</p>
-                <div className="bg-[#1a1f2e] rounded-lg p-4">
-                  <pre className="text-sm text-cyan-400">
-{`// Request Body
-{
-  "prompt": "Create a blog system with posts and comments",
-  "priority": "normal" // optional: "low" | "normal" | "high"
-}
-
-// Response
-{
-  "success": true,
-  "requestId": "uuid",
-  "status": "pending"
-}`}</pre>
-                </div>
-              </div>
-
-              {/* Status Endpoint */}
-              <div className="glass-card p-6 rounded-xl mb-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-                  <code className="text-white">/api/dark-factory/status/[taskId]</code>
-                </div>
-                <p className="text-gray-400 mb-4">Check generation task status</p>
-                <div className="bg-[#1a1f2e] rounded-lg p-4">
-                  <pre className="text-sm text-cyan-400">
-{`// Response
-{
-  "task": {
-    "id": "uuid",
-    "status": "completed", // pending | parsing | generating | validating | completed | failed
-    "progress": 100,
-    "artifacts": [
-      { "id": "uuid", "type": "prisma_schema", "filename": "ticket.prisma" },
-      { "id": "uuid", "type": "api_route", "filename": "tickets/route.ts" }
-    ]
-  }
-}`}</pre>
-                </div>
-              </div>
-
-              {/* Artifacts Endpoint */}
-              <div className="glass-card p-6 rounded-xl mb-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-                  <code className="text-white">/api/dark-factory/artifacts/[artifactId]</code>
-                </div>
-                <p className="text-gray-400 mb-4">Retrieve generated code</p>
-                <div className="bg-[#1a1f2e] rounded-lg p-4">
-                  <pre className="text-sm text-cyan-400">
-{`// Response
-{
-  "artifact": {
-    "id": "uuid",
-    "type": "api_route",
-    "filename": "tickets/route.ts",
-    "content": "// Generated API route code..."
-  }
-}`}</pre>
-                </div>
-              </div>
-
-              {/* Deploy Endpoint */}
-              <div className="glass-card p-6 rounded-xl">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-mono rounded">POST</span>
-                  <code className="text-white">/api/dark-factory/deploy</code>
-                </div>
-                <p className="text-gray-400 mb-4">Deploy artifacts to codebase</p>
-                <div className="bg-[#1a1f2e] rounded-lg p-4">
-                  <pre className="text-sm text-cyan-400">
-{`// Request Body
-{
-  "artifactIds": ["uuid1", "uuid2"],
-  "dryRun": false // optional: preview changes without deploying
-}
-
-// Response
-{
-  "success": true,
-  "deployed": 2,
-  "files": [
-    { "path": "prisma/schema.prisma", "action": "modified" },
-    { "path": "app/api/tickets/route.ts", "action": "created" }
-  ]
-}`}</pre>
-                </div>
-              </div>
-            </section>
-
-            {/* Testing */}
-            <section id="testing" className="mb-16">
-              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                <TestTube className="w-6 h-6 text-yellow-400" />
-                Testing Scenarios
-              </h2>
-
-              <p className="text-gray-300 mb-6">
-                External testing validates the system as a black box. Tests live <strong>outside</strong> the codebase 
-                to prevent "cheating" - the system can't see its own test cases.
-              </p>
-
-              <h3 className="text-xl font-semibold text-white mt-8 mb-4">Adding Test Scenarios</h3>
-              
-              <p className="text-gray-400 mb-4">Create test files in a separate directory outside your codebase (e.g., <code className="text-cyan-400">tests/external/</code>):</p>
-
-              <div className="bg-[#1a1f2e] rounded-lg overflow-hidden mb-6">
-                <div className="flex items-center justify-between px-4 py-2 bg-[#252b3b] border-b border-white/10">
-                  <span className="text-sm text-gray-400">test_dark_factory.sh</span>
-                  <Terminal className="w-4 h-4 text-gray-500" />
-                </div>
-                <pre className="p-4 text-sm text-green-400 overflow-x-auto">
-{`#!/bin/bash
-# External Test Suite for Dark Factory
-
-BASE_URL="http://localhost:3000"
-
-# Test 1: Submit a generation request
-echo "TEST 1: Generation Request"
-RESPONSE=$(curl -s -X POST "$BASE_URL/api/dark-factory/generate" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "prompt": "Create a simple todo list with tasks and categories"
-  }')
-
-SUCCESS=$(echo "$RESPONSE" | jq -r '.success')
-REQUEST_ID=$(echo "$RESPONSE" | jq -r '.requestId')
-
-if [ "$SUCCESS" = "true" ] && [ "$REQUEST_ID" != "null" ]; then
-  echo "✓ PASS: Generation submitted, requestId=$REQUEST_ID"
-else
-  echo "✗ FAIL: Expected success=true with requestId"
-fi
-
-# Test 2: Check status
-echo "TEST 2: Status Check"
-sleep 5 # Wait for processing
-STATUS=$(curl -s "$BASE_URL/api/dark-factory/status/$REQUEST_ID" | jq -r '.task.status')
-
-if [ "$STATUS" = "completed" ] || [ "$STATUS" = "generating" ]; then
-  echo "✓ PASS: Task is processing, status=$STATUS"
-else
-  echo "✗ FAIL: Unexpected status=$STATUS"
-fi`}</pre>
-              </div>
-
-              <h3 className="text-xl font-semibold text-white mt-8 mb-4">Test Scenario Format</h3>
-              
-              <div className="glass-card p-6 rounded-xl">
-                <p className="text-gray-300 mb-4">Each test should follow this pattern:</p>
-                <ol className="space-y-3 text-gray-300">
-                  <li className="flex gap-3">
-                    <span className="w-6 h-6 rounded-full bg-purple-500/30 text-purple-400 flex items-center justify-center text-sm flex-shrink-0">1</span>
-                    <span><strong>Define inputs</strong> - What spec/request to send</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="w-6 h-6 rounded-full bg-purple-500/30 text-purple-400 flex items-center justify-center text-sm flex-shrink-0">2</span>
-                    <span><strong>Define expected outputs</strong> - What the response should contain</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="w-6 h-6 rounded-full bg-purple-500/30 text-purple-400 flex items-center justify-center text-sm flex-shrink-0">3</span>
-                    <span><strong>Execute the request</strong> - Call the API</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="w-6 h-6 rounded-full bg-purple-500/30 text-purple-400 flex items-center justify-center text-sm flex-shrink-0">4</span>
-                    <span><strong>Compare results</strong> - Verify actual matches expected</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="w-6 h-6 rounded-full bg-purple-500/30 text-purple-400 flex items-center justify-center text-sm flex-shrink-0">5</span>
-                    <span><strong>Report pass/fail</strong> - Log the result</span>
-                  </li>
-                </ol>
-              </div>
-
-              <h3 className="text-xl font-semibold text-white mt-8 mb-4">Running Tests</h3>
-              <div className="bg-[#1a1f2e] rounded-lg p-4">
-                <pre className="text-sm text-cyan-400">
-{`# Make executable
-chmod +x tests/external/test_dark_factory.sh
-
-# Run tests
-./tests/external/test_dark_factory.sh`}</pre>
-              </div>
-            </section>
-
-            {/* Deployment */}
-            <section id="deployment" className="mb-16">
-              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                <Zap className="w-6 h-6 text-orange-400" />
-                Deployment
-              </h2>
-
-              <p className="text-gray-300 mb-6">
-                Generated artifacts can be deployed directly to the codebase or staged for review.
-              </p>
-
-              <h3 className="text-xl font-semibold text-white mt-8 mb-4">Deployment Workflow</h3>
-              
-              <div className="space-y-4">
-                <div className="glass-card p-4 rounded-lg flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-cyan-500/30 flex items-center justify-center text-cyan-400 flex-shrink-0">
-                    1
-                  </div>
+                </li>
+                <li className="flex gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">2</span>
                   <div>
-                    <h4 className="text-white font-medium">Review Artifacts</h4>
-                    <p className="text-gray-400 text-sm">Use the dashboard at /dark-factory to view generated code</p>
+                    <h4 className="text-white font-medium">Describe What You Want</h4>
+                    <p className="text-gray-400 text-sm">Type a natural language description like: "Create an API to track customer orders with status updates, shipping info, and order history"</p>
                   </div>
-                </div>
-                <div className="glass-card p-4 rounded-lg flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-cyan-500/30 flex items-center justify-center text-cyan-400 flex-shrink-0">
-                    2
-                  </div>
+                </li>
+                <li className="flex gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center font-bold">3</span>
                   <div>
-                    <h4 className="text-white font-medium">Dry Run (Optional)</h4>
-                    <p className="text-gray-400 text-sm">Preview what files will be created/modified without deploying</p>
+                    <h4 className="text-white font-medium">Watch the Pipeline Run</h4>
+                    <p className="text-gray-400 text-sm">The system parses intent → generates schemas → writes code → validates. You'll see real-time progress in the Tasks tab.</p>
                   </div>
-                </div>
-                <div className="glass-card p-4 rounded-lg flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-cyan-500/30 flex items-center justify-center text-cyan-400 flex-shrink-0">
-                    3
-                  </div>
+                </li>
+                <li className="flex gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold">4</span>
                   <div>
-                    <h4 className="text-white font-medium">Deploy</h4>
-                    <p className="text-gray-400 text-sm">Click deploy or call the API to write files to codebase</p>
+                    <h4 className="text-white font-medium">Review at "Awaiting Approval"</h4>
+                    <p className="text-gray-400 text-sm">Click on the task to expand it. Review all generated artifacts in the Artifacts tab. Read the code!</p>
                   </div>
-                </div>
-                <div className="glass-card p-4 rounded-lg flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-cyan-500/30 flex items-center justify-center text-cyan-400 flex-shrink-0">
-                    4
-                  </div>
+                </li>
+                <li className="flex gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center font-bold">5</span>
                   <div>
-                    <h4 className="text-white font-medium">Migrate Database</h4>
-                    <p className="text-gray-400 text-sm">Run prisma migrate if schema was modified</p>
+                    <h4 className="text-white font-medium">Deploy to Codebase</h4>
+                    <p className="text-gray-400 text-sm">If satisfied, click "Deploy All Artifacts". Files are written to your project. Status changes to "completed".</p>
                   </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Examples */}
-            <section id="examples" className="mb-16">
-              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                <Play className="w-6 h-6 text-green-400" />
-                Examples
-              </h2>
-
-              <div className="space-y-6">
-                {/* Example 1 */}
-                <div className="glass-card p-6 rounded-xl">
-                  <h4 className="text-white font-semibold mb-3">Invoice Management System</h4>
-                  <div className="bg-[#1a1f2e] rounded-lg p-4">
-                    <pre className="text-sm text-green-400">
-{`Create an invoice management system with:
-- Invoices with number, date, due date, status (draft/sent/paid/overdue)
-- Line items with description, quantity, unit price
-- Customers with name, email, address
-- Payment records with date, amount, method
-- Calculate totals automatically
-- Track partial payments`}</pre>
+                </li>
+                <li className="flex gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center font-bold">6</span>
+                  <div>
+                    <h4 className="text-white font-medium">Done!</h4>
+                    <p className="text-gray-400 text-sm">Your new API, models, and tests are now part of the codebase. Run <code className="text-cyan-400">yarn prisma generate</code> if needed.</p>
                   </div>
-                </div>
+                </li>
+              </ol>
+            </div>
+          </motion.section>
 
-                {/* Example 2 */}
-                <div className="glass-card p-6 rounded-xl">
-                  <h4 className="text-white font-semibold mb-3">Project Management</h4>
-                  <div className="bg-[#1a1f2e] rounded-lg p-4">
-                    <pre className="text-sm text-green-400">
-{`Build a project management system:
-- Projects with name, description, start/end dates, budget
-- Tasks with title, description, status, priority, estimated hours
-- Team members with roles (owner/manager/member/viewer)
-- Time entries for tracking work
-- File attachments on tasks
-- Comments and activity feed`}</pre>
-                  </div>
-                </div>
-
-                {/* Example 3 */}
-                <div className="glass-card p-6 rounded-xl">
-                  <h4 className="text-white font-semibold mb-3">Inventory Tracking</h4>
-                  <div className="bg-[#1a1f2e] rounded-lg p-4">
-                    <pre className="text-sm text-green-400">
-{`Create inventory tracking:
-- Products with SKU, name, description, category, reorder point
-- Warehouses/locations with address
-- Stock levels per product per location
-- Stock movements (in/out/transfer) with timestamp and reason
-- Low stock alerts when below reorder point
-- Suppliers with contact info and lead times`}</pre>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-          </div>
+          {/* CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="text-center"
+          >
+            <Link
+              href="/dark-factory"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-semibold rounded-xl hover:from-cyan-400 hover:to-purple-400 transition-all shadow-lg shadow-cyan-500/25"
+            >
+              <Factory className="w-5 h-5" />
+              Open Dark Factory Dashboard
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </motion.div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
