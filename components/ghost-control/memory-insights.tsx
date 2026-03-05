@@ -164,7 +164,7 @@ export function MemoryInsights() {
 
   const filteredMemories = memories.filter(m => {
     if (typeFilter !== 'all' && m.type !== typeFilter) return false;
-    if (searchQuery && !m.content.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (searchQuery && !(m.content || '').toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
 
