@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Ghost, Menu, X, Calculator, Home, Swords, Newspaper, FolderOpen, Book, Brain } from 'lucide-react';
+import { Ghost, Menu, X, Calculator, Home, Swords, Newspaper, FolderOpen, Book } from 'lucide-react';
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -80,13 +80,6 @@ export default function Header() {
               <Book className="w-4 h-4" />
               Docs
             </Link>
-            <Link
-              href="/ghost-control"
-              className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors"
-            >
-              <Brain className="w-4 h-4" />
-              Control
-            </Link>
             <a
               href="#design-partner"
               className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg hover:from-cyan-400 hover:to-purple-500 transition-all shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40"
@@ -156,14 +149,6 @@ export default function Header() {
             >
               <Book className="w-4 h-4" />
               Docs
-            </Link>
-            <Link
-              href="/ghost-control"
-              className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <Brain className="w-4 h-4" />
-              Ghost Control
             </Link>
             <a
               href="#design-partner"
