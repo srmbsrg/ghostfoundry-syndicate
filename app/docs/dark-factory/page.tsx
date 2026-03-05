@@ -398,7 +398,7 @@ export default function DarkFactoryDocsPage() {
                     </div>
                     <div>
                       <div className="text-white font-medium">{artifact.label}</div>
-                      <div className="text-xs text-gray-500 font-mono">{artifact.path}</div>
+                      <div className="text-xs text-cyan-400/70 font-mono">{artifact.path}</div>
                     </div>
                   </div>
                 ))}
